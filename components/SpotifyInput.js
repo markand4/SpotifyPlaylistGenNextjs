@@ -17,7 +17,6 @@ export default function SpotifyInput() {
   const RESPONSE_TYPE = "token"
   
   const [token, setToken] = useState("")
-  const [IsLoggedIn, setIsLoggedIn] = useState(false);
   const [currentState, setCurrentState] = useState("notSignedIn");
 
 
@@ -43,7 +42,6 @@ export default function SpotifyInput() {
     }, [])
     const logout = () => {
       setToken("")
-      setIsLoggedIn(false)
       setCurrentState("notSignedIn")
       window.localStorage.removeItem("token")
     }
