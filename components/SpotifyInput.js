@@ -66,11 +66,10 @@ const createPlaylist = async (e) => {
   var userID = userD.data.id
   
   //create playlist
-  var playlistGen = await axios.post(`https://api.spotify.com/v1/users/${userD}/playlists`, {
+  var playlistGen = await axios.post(`https://api.spotify.com/v1/users/${userID}/playlists`, {
                 headers: {
                   'Content-Type' : "application/json",
-                  'Authorization': `Bearer ${token}`,
-                  'Access-Control-Allow-Origin': '*'
+                  'Authorization': `Bearer ${token}`
               },
               params: {
                 "name": {userInput}+" DJ Mag Top 100",
