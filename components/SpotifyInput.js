@@ -66,7 +66,7 @@ const createPlaylist = async (e) => {
   var userID = userD.data.id
   
   //create playlist
-  var playlistGen = await axios.get(`https://api.spotify.com/v1/users/${userD}/playlists`, {
+  var playlistGen = await axios.post(`https://api.spotify.com/v1/users/${userD}/playlists`, {
                 headers: {
                   'Content-Type' : "application/json",
                   'Authorization': `Bearer ${token}`,
