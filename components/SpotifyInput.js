@@ -4,6 +4,7 @@ import axios from "axios";
 import Image from 'next/image'
 import { data } from "autoprefixer";
 import { list } from "postcss";
+import { CookiesProvider, useCookies } from "react-cookie";
 
 
 export default function SpotifyInput() {
@@ -11,18 +12,18 @@ export default function SpotifyInput() {
   const [userInput, setUserInput] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   
-  const CLIENT_ID = (process.env.SPOTIFY_ID)
-  const REDIRECT_URI = (process.env.SPOTIFY_REDIRECT_URI)
-  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize"
-  const RESPONSE_TYPE = "token"
+  const CLIENT_ID = (process.env.SPOTIFY_ID);
+  const REDIRECT_URI = (process.env.SPOTIFY_REDIRECT_URI);
+  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
+  const RESPONSE_TYPE = "token";
   
-  const [token, setToken] = useState("")
+  const [cookie, setCookie] = useCookies("");
   const [currentState, setCurrentState] = useState("notSignedIn");
 
 
-  const [artistList, setArtistList] = useState([])
-  const [artists, setArtists] = useState([])
-  const [topSongs, setTopSongs] = useState([])
+  const [artistList, setArtistList] = useState([]);
+  const [artists, setArtists] = useState([]);
+  const [topSongs, setTopSongs] = useState([]);
 
     useEffect(() => {
         const hash = window.location.hash
@@ -37,11 +38,11 @@ export default function SpotifyInput() {
         if(token){
           setCurrentState('signedIn')
         }
-        setToken(token)
+        setCookie("token",token,{ path: "/" })
     
     }, [])
     const logout = () => {
-      setToken("")
+      setCookie("token","",{ path: "/" })
       setCurrentState("notSignedIn")
       window.localStorage.removeItem("token")
     }
@@ -57,19 +58,20 @@ export default function SpotifyInput() {
 const createPlaylist = async (e) => {
   e.preventDefault()
 
+  console.log(cookie.token)
   //get user ID for playlist generation
   var userD = await axios.get(`https://api.spotify.com/v1/me`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${cookie.token}`
             }
         }) 
   var userID = userD.data.id
   
   //create playlist
   var playlistGen = await axios.post(`https://api.spotify.com/v1/users/${userID}/playlists`, {
-                headers: {
+              headers: {
                   'Content-Type' : "application/json",
-                  'Authorization': `Bearer ${token}`
+                  'Authorization': `Bearer ${cookie.token}`
               },
               params: {
                 "name": {userInput}+" DJ Mag Top 100",
@@ -86,7 +88,7 @@ const createPlaylist = async (e) => {
   const {data} = await axios.get("https://api.spotify.com/v1/search", {
             headers: {
                 'Content-Type' : "application/json",
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${cookie.token}`
             },
             params: {
                 limit: 1,
@@ -99,7 +101,7 @@ const createPlaylist = async (e) => {
   //get top 10 track objects from artist name 
   var dataTrack = await axios.get(`https://api.spotify.com/v1/artists/${artID}/top-tracks`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${cookie.token}`
             },
             params: {
                 limit: 10,
@@ -117,7 +119,7 @@ const searchArtists = async (e) => {
     for(var i in artistList){
       const {data} = await axios.get("https://api.spotify.com/v1/search", {
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${cookie.token}`
         },
         params: {
             q: i,
@@ -138,7 +140,7 @@ function getTopSongs() {
     for(var i in artists){
       axios.get("https://api.spotify.com/v1/artists/"+i.id+"/top-tracks", {
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${cookie.token}`
         }
       })
       .then((response) => {
