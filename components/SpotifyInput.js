@@ -16,6 +16,13 @@ export default function SpotifyInput() {
   const REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI;
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
   const RESPONSE_TYPE = "token";
+
+  const args = new URLSearchParams({
+    client_id: CLIENT_ID,
+    scope: 'user-read-private user-read-email playlist-modify-private playlist-modify-public',
+    redirect_uri: REDIRECT_URI,
+    response_type: 'token',
+  });
   
   const [cookie, setCookie] = useCookies("");
   const [currentState, setCurrentState] = useState("notSignedIn");
@@ -24,7 +31,8 @@ export default function SpotifyInput() {
   const [artistList, setArtistList] = useState([]);
   const [artists, setArtists] = useState([]);
   const [topSongs, setTopSongs] = useState([]);
-  let codeVerifier = generateRandomString(128);
+  
+  
 
     useEffect(() => {
         const hash = window.location.hash
@@ -40,9 +48,10 @@ export default function SpotifyInput() {
           setCurrentState('signedIn')
         }
         setCookie("token",token,{ path: "/" })
+        console.log(cookie.token)
     
-    }, [])
-    function generateRandomString(length) {
+    }, []) 
+    /* function generateRandomString(length) {
       let text = '';
       let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     
@@ -77,31 +86,65 @@ export default function SpotifyInput() {
         code_challenge_method: 'S256',
         code_challenge: await generateCodeChallenge(codeVerifier)
       });
-    
-      window.location = `https://accounts.spotify.com/authorize?${args}`
-      const urlParams = new URLSearchParams(window.location.search);
-      let code = urlParams.get('code');
-
-      
+      setCookie("status","loggedIn",{ path: "/" })
+      location.href = `https://accounts.spotify.com/authorize?${args}`;
     });
-  }
+  } */
+  /* const getAuthToken = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    let code = urlParams.get('code');
+
+    let codeVerifier = localStorage.getItem('code_verifier');
+
+    let body = new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: REDIRECT_URI,
+      client_id: CLIENT_ID,
+      code_verifier: codeVerifier
+    });
+
+    const response = fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: body
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('HTTP status ' + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          localStorage.setItem('access_token', data.access_token);
+          setCookie("token",data.access_token,{ path: "/" });
+          console.log(data.access_token)
+          
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+  } */
     const logout = () => {
-      setCookie("token","",{ path: "/" })
-      setCurrentState("notSignedIn")
-      window.localStorage.removeItem("token")
+      setCookie("token","",{ path: "/" });
+      setCurrentState("notSignedIn");
+      window.localStorage.removeItem("token");
     }
   const handleValidation = () => {
     if(userInput.length == 0 || parseInt(userInput)<2004 || parseInt(userInput)>2022 ){
-      setIsFormValid(false)
+      setIsFormValid(false);
     }else{
-      setIsFormValid(true)
+      setIsFormValid(true);
     }
-    return isFormValid
+    return isFormValid;
   };
 
 const createPlaylist = async (e) => {
-  e.preventDefault()
+  e.preventDefault();
 
+  
   //get user ID for playlist generation
   var userD = await axios.get(`https://api.spotify.com/v1/me`, {
             headers: {
@@ -257,7 +300,8 @@ const renderArtists = () => {
             {currentState == 'notSignedIn' ?
                     <a className="inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(30,215,96,0.2)] dark:hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.21)]" data-te-ripple-init="" data-te-ripple-color="light" 
                     //href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}
-                    onClick={login}
+                    href={`${AUTH_ENDPOINT}?${args}`}
+                    //onClick={login}
                     >Login
                     to Spotify</a> 
                     : null} 
