@@ -5,17 +5,17 @@ import Image from 'next/image'
 import { data } from "autoprefixer";
 import { list } from "postcss";
 import { CookiesProvider, useCookies } from "react-cookie";
-
+import { Progress } from "@material-tailwind/react";
 
 export default function SpotifyInput() {
   //Set Userinput variable and valid form
   const [userInput, setUserInput] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   
+  //set spotify variables
   const CLIENT_ID = process.env.NEXT_PUBLIC_SPOTIFY_ID;
   const REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI;
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
-  const RESPONSE_TYPE = "token";
 
   const args = new URLSearchParams({
     client_id: CLIENT_ID,
@@ -24,13 +24,11 @@ export default function SpotifyInput() {
     response_type: 'token',
   });
   
+  //set cookie variables and state
   const [cookie, setCookie] = useCookies("");
   const [currentState, setCurrentState] = useState("notSignedIn");
-
-
-  const [artistList, setArtistList] = useState([]);
   const [artists, setArtists] = useState([]);
-  const [topSongs, setTopSongs] = useState([]);
+  const [completionProgress, setCompletionProgress] = useState(0);
   
   
 
@@ -68,7 +66,7 @@ export default function SpotifyInput() {
 
 const createPlaylist = async (e) => {
   e.preventDefault();
-
+  setCurrentState("creatingPlayist")
   
   //get user ID for playlist generation
   var userD = await axios.get(`https://api.spotify.com/v1/me`, {
@@ -92,8 +90,11 @@ const createPlaylist = async (e) => {
   var playlistID = playlistD.data.id
     
   //set and iterate through artist list       
-  var artList = userData[userInput]
+  var artList = userData[userInput];
   for (let i = 0; i < artList.length; i++) {
+    //add 1% to progress bar
+    setCompletionProgress(i);
+
     //get artist spotify object from name
     const {data} = await axios.get("https://api.spotify.com/v1/search", {
               headers: {
@@ -132,47 +133,9 @@ const createPlaylist = async (e) => {
       }
     })
   }
+  setCurrentState("playlistCreated")
 }
 
-const searchArtists = async (e) => {
-    e.preventDefault()
-    setArtistList(userData[userInput])
-
-    var temp = []
-    for(var i in artistList){
-      const {data} = await axios.get("https://api.spotify.com/v1/search", {
-        headers: {
-            Authorization: `Bearer ${cookie.token}`
-        },
-        params: {
-            q: i,
-            type: "artist"
-        }
-      })
-      temp.push(data.artists.items[0])
-      
-      
-    }
-    console.log(temp)
-    setArtists(temp)
-    getTopSongs(temp)
-}
-
-function getTopSongs() {
-    var temp = []
-    for(var i in artists){
-      axios.get("https://api.spotify.com/v1/artists/"+i.id+"/top-tracks", {
-        headers: {
-            Authorization: `Bearer ${cookie.token}`
-        }
-      })
-      .then((response) => {
-        temp.push(data['tracks'].slice(0,10));
-      });
-      
-    }
-    setTopSongs(temp)
-}
 const renderArtists = () => {
   return artists.map(artist => (
       <div key={artist.id}>
@@ -196,6 +159,14 @@ const renderArtists = () => {
             alt="Spotify Logo"
             className="pt-10"
           />
+          <div className="Spotify-Login pt-20">
+            {currentState == 'notSignedIn' ?
+                    <a className="inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(30,215,96,0.2)] dark:hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.21)]" data-te-ripple-init="" data-te-ripple-color="light" 
+                    href={`${AUTH_ENDPOINT}?${args}`}
+                    >Login
+                    to Spotify</a> 
+                    : null} 
+            </div>
             {currentState == 'signedIn' ? <form className="pt-20 min-w-[80%]">   
               <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
               <div className="relative">
@@ -221,14 +192,9 @@ const renderArtists = () => {
                   </button>
               </div>
           </form> : null}
-          <div className="Spotify-Login pt-20">
-            {currentState == 'notSignedIn' ?
-                    <a className="inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(30,215,96,0.2)] dark:hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.21)]" data-te-ripple-init="" data-te-ripple-color="light" 
-                    //href={`${AUTH_ENDPOINT}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}`}
-                    href={`${AUTH_ENDPOINT}?${args}`}
-                    //onClick={login}
-                    >Login
-                    to Spotify</a> 
+            <div className="Loading Bar min-w-[80%]">
+            {currentState == 'creatingPlayist' ?
+                    <Progress value={completionProgress} label="Completed" size="lg" color="green" />
                     : null} 
             </div>
             <div className="Spotify-Login pt-20">
