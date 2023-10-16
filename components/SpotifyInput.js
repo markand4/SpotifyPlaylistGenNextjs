@@ -117,7 +117,7 @@ const createPlaylist = async (e) => {
 
     //creating artist list for carousel object later
     if(i<=10){
-      tempArt.push(data.artists.items[0].images[0].url);
+      tempArt.push(data.artists.items[0]);
     }
     if(i==11){
       setArtists(artists.push(tempArt));
