@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { data } from "autoprefixer";
 import { list } from "postcss";
 import { CookiesProvider, useCookies } from "react-cookie";
-import { Progress } from "@material-tailwind/react";
+import { Progress, Typography } from "@material-tailwind/react";
 
 export default function SpotifyInput() {
   //Set Userinput variable and valid form
@@ -167,13 +167,14 @@ const renderArtists = () => {
                     to Spotify</a> 
                     : null} 
             </div>
-            {currentState == 'signedIn' ? <form className="pt-20 min-w-[80%]">   
-              <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-              <div className="relative">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            
+          
+          {currentState == 'signedIn' ? <form class="items-center pt-20 min-w-[80%]">   
+              <div class="relative w-full">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                      </svg>
+                    </svg>
                   </div>
                   <input 
                     onChange={(e) => setUserInput(e.target.value)} 
@@ -183,19 +184,33 @@ const renderArtists = () => {
                     className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
                     placeholder="Enter Year for DJ MAG Top 100" required>
                   </input>
-                  <button 
+              </div>
+              <div class="flex flex-col items-center pt-1">
+              <button 
                     type="submit" 
                     vis
                     disabled={isFormValid}
                     onClick={createPlaylist}
-                    className="text-white absolute right-2.5 bottom-1 bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2">Create Playlist
+                    className="text-white items-center bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-8 py-2.5 text-center mr-2 mb-2">Create Playlist
                   </button>
               </div>
           </form> : null}
+
             <div className="Loading Bar min-w-[80%]">
             {currentState == 'creatingPlayist' ?
-                    <Progress value={completionProgress} label="Completed" size="lg" color="green" />
-                    : null} 
+                    //<Progress value={completionProgress} label="Completed" size="lg" color="green" />                   
+                    <div className="w-full">
+                    <div className="mb-2 flex items-center justify-between gap-4">
+                      <Typography color="whitey" variant="h6">
+                        Completed
+                      </Typography>
+                      <Typography color="white" variant="h6">
+                      {completionProgress}%
+                      </Typography>
+                    </div>
+                    <Progress value={completionProgress} label="Completed" size="lg" color="green"/>
+                  </div> 
+                  : null}
             </div>
             <div className="Spotify-Login pt-20">
             {currentState == 'playlistCreated' ?
