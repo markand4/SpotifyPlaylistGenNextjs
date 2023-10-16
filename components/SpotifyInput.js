@@ -6,6 +6,10 @@ import { data } from "autoprefixer";
 import { list } from "postcss";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Progress, Typography } from "@material-tailwind/react";
+import useEmblaCarousel from 'embla-carousel-react'
+import EmblaCarousel from './EmblaCarousel'
+import { Carousel } from "react-responsive-carousel";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 export default function SpotifyInput() {
   //Set Userinput variable and valid form
@@ -29,6 +33,7 @@ export default function SpotifyInput() {
   const [currentState, setCurrentState] = useState("notSignedIn");
   const [artists, setArtists] = useState([]);
   const [completionProgress, setCompletionProgress] = useState(0);
+  const OPTIONS = {}
   
   
 
@@ -46,7 +51,6 @@ export default function SpotifyInput() {
           setCurrentState('signedIn')
         }
         setCookie("token",token,{ path: "/" })
-        console.log(cookie.token)
     
     }, []) 
     
@@ -56,7 +60,7 @@ export default function SpotifyInput() {
       window.localStorage.removeItem("token");
     }
   const handleValidation = () => {
-    if(userInput.length == 0 || parseInt(userInput)<2004 || parseInt(userInput)>2022 ){
+    if(userInput.length <= 0 || parseInt(userInput)<2004 || parseInt(userInput)>2022 ){
       setIsFormValid(false);
     }else{
       setIsFormValid(true);
@@ -91,6 +95,8 @@ const createPlaylist = async (e) => {
     
   //set and iterate through artist list       
   var artList = userData[userInput];
+  var tempArt = []
+
   for (let i = 0; i < artList.length; i++) {
     //add 1% to progress bar
     setCompletionProgress(i);
@@ -107,7 +113,15 @@ const createPlaylist = async (e) => {
                   type: "artist"
               }
           })
-    var artID = data.artists.items[0].id
+    var artID = data.artists.items[0].id;
+
+    //creating artist list for carousel object later
+    if(i<=10){
+      tempArt.push(data.artists.items[0].images[0].url);
+    }
+    if(i==11){
+      setArtists(artists.push(tempArt));
+    }
 
     //get top 10 track objects from artist name 
     var dataTrack = await axios.get(`https://api.spotify.com/v1/artists/${artID}/top-tracks`, {
@@ -133,17 +147,28 @@ const createPlaylist = async (e) => {
       }
     })
   }
+  console.log(artists);
   setCurrentState("playlistCreated")
 }
 
 const renderArtists = () => {
-  return artists.map(artist => (
+  return artists[0].map(artist => (
       <div key={artist.id}>
           {artist.images.length ? <img width={"100%"} src={artist.images[0].url} alt=""/> : <div>No Image</div>}
           {artist.name}
       </div>
   ))
 }
+/* const renderCarouselElements = () => {
+  return artists.map(artist => (
+      <div key={artist.id}className="slide">
+          {artist.images.length ? <img width={"100%"} src={artist.images[0].url} key={artist.index} alt=""/> : <div>No Image</div>}
+          {artist.name}
+     </div>
+  ))
+} */
+                    
+                    
 
 
 
@@ -169,9 +194,9 @@ const renderArtists = () => {
             </div>
             
           
-          {currentState == 'signedIn' ? <form class="items-center pt-20 min-w-[80%]">   
-              <div class="relative w-full">
-                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+          {currentState == 'signedIn' ? <form className="items-center pt-20 min-w-[80%]">   
+              <div className="relative w-full">
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                           <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                     </svg>
@@ -185,10 +210,9 @@ const renderArtists = () => {
                     placeholder="Enter Year for DJ MAG Top 100" required>
                   </input>
               </div>
-              <div class="flex flex-col items-center pt-1">
+              <div className="flex flex-col items-center pt-1">
               <button 
                     type="submit" 
-                    vis
                     disabled={isFormValid}
                     onClick={createPlaylist}
                     className="text-white items-center bg-gradient-to-br from-green-400 to-blue-600 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-green-200 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-8 py-2.5 text-center mr-2 mb-2">Create Playlist
@@ -201,7 +225,7 @@ const renderArtists = () => {
                     //<Progress value={completionProgress} label="Completed" size="lg" color="green" />                   
                     <div className="w-full">
                     <div className="mb-2 flex items-center justify-between gap-4">
-                      <Typography color="whitey" variant="h6">
+                      <Typography color="white" variant="h6">
                         Completed
                       </Typography>
                       <Typography color="white" variant="h6">
@@ -214,11 +238,19 @@ const renderArtists = () => {
             </div>
             <div className="Spotify-Login pt-20">
             {currentState == 'playlistCreated' ?
+              <div id="playlistCreated">
+                 {/*  { <div className="box">
+                  <Carousel useKeyboardArrows={true}>
+                   {renderCarouselElements()} 
+                    </Carousel>
+                    </div>  } */}
+                    {renderArtists()}
+                    {/* <EmblaCarousel slides={artists[0]} options={OPTIONS} /> */}
                     <button className="inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(30,215,96,0.2)] dark:hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.21)]" data-te-ripple-init="" data-te-ripple-color="light"  
                     onClick={logout}>Logout</button>
-                    :   null}
-            </div>
-          {renderArtists()}   
+              </div>    
+            :   null}
+            </div> 
         </div>
       </div>    
     </section>
