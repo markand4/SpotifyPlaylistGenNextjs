@@ -1,5 +1,5 @@
 import userData from "../constants/data";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Component } from "react";
 import axios from "axios";
 import Image from 'next/image'
 import { data } from "autoprefixer";
@@ -7,9 +7,12 @@ import { list } from "postcss";
 import { CookiesProvider, useCookies } from "react-cookie";
 import { Progress, Typography } from "@material-tailwind/react";
 import useEmblaCarousel from 'embla-carousel-react'
-import EmblaCarousel from './EmblaCarousel'
+import Autoplay from "embla-carousel-autoplay";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import Slider from "react-slick";
 
 export default function SpotifyInput() {
   //Set Userinput variable and valid form
@@ -31,12 +34,13 @@ export default function SpotifyInput() {
   //set cookie variables and state
   const [cookie, setCookie] = useCookies("");
   const [currentState, setCurrentState] = useState("notSignedIn");
-  const [artists, setArtists] = useState([]);
+  let [artists, setArtists] = useState([]);
   const [completionProgress, setCompletionProgress] = useState(0);
   const OPTIONS = {}
   
   
-
+  const [emblaRef] = useEmblaCarousel({ loop: false }, [Autoplay()]);
+  
     useEffect(() => {
         const hash = window.location.hash
         let token = window.localStorage.getItem("token")
@@ -73,7 +77,7 @@ const createPlaylist = async (e) => {
   setCurrentState("creatingPlayist")
   
   //get user ID for playlist generation
-  var userD = await axios.get(`https://api.spotify.com/v1/me`, {
+  const userD = await axios.get(`https://api.spotify.com/v1/me`, {
             headers: {
                 Authorization: `Bearer ${cookie.token}`
             }
@@ -102,7 +106,7 @@ const createPlaylist = async (e) => {
     setCompletionProgress(i);
 
     //get artist spotify object from name
-    const {data} = await axios.get("https://api.spotify.com/v1/search", {
+    let {data} = await axios.get("https://api.spotify.com/v1/search", {
               headers: {
                   'Content-Type' : "application/json",
                   'Authorization': `Bearer ${cookie.token}`
@@ -113,18 +117,19 @@ const createPlaylist = async (e) => {
                   type: "artist"
               }
           })
-    var artID = data.artists.items[0].id;
+    let artID = data.artists.items[0].id;
 
     //creating artist list for carousel object later
     if(i<=10){
+      //tempArt.push({id:i+1, url:data.artists.items[0].images[0].url});
       tempArt.push(data.artists.items[0]);
     }
     if(i==11){
-      setArtists(artists.push(tempArt));
+      artists = tempArt;
     }
 
     //get top 10 track objects from artist name 
-    var dataTrack = await axios.get(`https://api.spotify.com/v1/artists/${artID}/top-tracks`, {
+    let dataTrack = await axios.get(`https://api.spotify.com/v1/artists/${artID}/top-tracks`, {
               headers: {
                   Authorization: `Bearer ${cookie.token}`
               },
@@ -133,8 +138,8 @@ const createPlaylist = async (e) => {
                   market: 'US'
               }
           })      
-    var artistTracks = dataTrack.data.tracks;
-    var trackURIs = artistTracks.map(v => v.uri);
+    let artistTracks = dataTrack.data.tracks;
+    let trackURIs = artistTracks.map(v => v.uri);
 
     //add tracks to playlist created 
     await axios({
@@ -151,24 +156,51 @@ const createPlaylist = async (e) => {
   setCurrentState("playlistCreated")
 }
 
-const renderArtists = () => {
-  return artists[0].map(artist => (
-      <div key={artist.id}>
-          {artist.images.length ? <img width={"100%"} src={artist.images[0].url} alt=""/> : <div>No Image</div>}
-          {artist.name}
-      </div>
-  ))
-}
+
 /* const renderCarouselElements = () => {
-  return artists.map(artist => (
-      <div key={artist.id}className="slide">
+  return (
+    <div
+      className="overflow-hidden bg-gray-200 w-full mx-auto flex items-center justify-center h-screen"
+      ref={emblaRef}>
+      <div className="flex">
+        {artists?.map((artist) => {
+          return (
+            <div key={artist.id}className="slide">
           {artist.images.length ? <img width={"100%"} src={artist.images[0].url} key={artist.index} alt=""/> : <div>No Image</div>}
           {artist.name}
      </div>
-  ))
+          );
+        })}
+      </div>
+    </div>
+  );
 } */
-                    
-                    
+
+const renderCarouselElement = () => {
+  return (
+    <div
+      className="overflow-hidden bg-gray-200 w-full mx-auto flex items-center justify-center h-screen"
+      ref={emblaRef}>
+      <div className="flex">
+        {artists ?.map((artist) => {
+          return (
+            <div className="embla__slide relative h-full w-full" key={artist.id}>
+
+                {/* the image */}
+                {artist.images.length ? <img width={artist.images[0].width} height={artist.images[0].height} src={artist.images[0].url} key={artist.index} alt=""/> : <div>No Image</div>}
+
+              {/* title/subtitle */}
+              <h1 className="absolute top-1/2 left-1/2 w-full md:w-auto transform -translate-x-1/2 translate-y-[3rem] md:translate-y-[9rem]  lg:translate-y-48 bg-cyan-600 py-2 lg:py-4 px-2 lg:px-8 text-xl lg:text-2xl text-white font-extrabold">
+                {artist.name}
+              </h1>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 
 
@@ -176,6 +208,9 @@ const renderArtists = () => {
     <section>
       <div id="spotifybackground" className="align-baseline relative z-10 rounded-md shadow-md bg-[#202A44] p-4 md:p-10 lg:p-20 max-w-6xl mx-auto mb-20 -mt-4">
         <div className="flex bg-black min-h-screen flex-col my-auto items-center bgimg bg-cover">
+        <div>
+        <h2> Single Item</h2>
+      </div>
         <Image
             src = '/Spotify_Logo_RGB_Green.png'
             priority={true}
@@ -219,10 +254,9 @@ const renderArtists = () => {
                   </button>
               </div>
           </form> : null}
-
+        
             <div className="Loading Bar min-w-[80%]">
-            {currentState == 'creatingPlayist' ?
-                    //<Progress value={completionProgress} label="Completed" size="lg" color="green" />                   
+            {currentState == 'creatingPlayist' ?                 
                     <div className="w-full">
                     <div className="mb-2 flex items-center justify-between gap-4">
                       <Typography color="white" variant="h6">
@@ -239,13 +273,7 @@ const renderArtists = () => {
             <div className="Spotify-Login pt-20">
             {currentState == 'playlistCreated' ?
               <div id="playlistCreated">
-                 {/*  { <div className="box">
-                  <Carousel useKeyboardArrows={true}>
-                   {renderCarouselElements()} 
-                    </Carousel>
-                    </div>  } */}
-                    {renderArtists()}
-                    {/* <EmblaCarousel slides={artists[0]} options={OPTIONS} /> */}
+                    {renderCarouselElement()}
                     <button className="inline-block w-full rounded bg-primary px-7 pb-2.5 pt-3 text-sm font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(30,215,96,0.2)] dark:hover:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:focus:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.2)] dark:active:shadow-[0_8px_9px_-4px_rgba(30,215,96,0.2),0_4px_18px_0_rgba(30,215,96,0.21)]" data-te-ripple-init="" data-te-ripple-color="light"  
                     onClick={logout}>Logout</button>
               </div>    

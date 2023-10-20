@@ -42,3 +42,8 @@ img {
   background-size: 10px 10px;
   background-repeat: repeat;
 }
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
