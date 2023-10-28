@@ -1,5 +1,4 @@
 import React from "react";
-import myData from "../constants/data";
 
 export default function Footer() {
   return (

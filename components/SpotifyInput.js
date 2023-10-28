@@ -6,15 +6,6 @@ import { CookiesProvider, useCookies } from "react-cookie";
 import { Progress, Typography } from "@material-tailwind/react";
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from "embla-carousel-autoplay";
-import { Carousel } from "react-responsive-carousel";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
-import "swiper/css";
-import "swiper/css/autoplay";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/effect-fade";
 
 export default function SpotifyInput() {
   //Set Userinput variable and valid form
@@ -26,6 +17,7 @@ export default function SpotifyInput() {
   const REDIRECT_URI = process.env.NEXT_PUBLIC_SPOTIFY_REDIRECT_URI;
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 
+  //set args for login url
   const args = new URLSearchParams({
     client_id: CLIENT_ID,
     scope: 'user-read-private user-read-email playlist-modify-private playlist-modify-public',
@@ -37,60 +29,15 @@ export default function SpotifyInput() {
   const [cookie, setCookie] = useCookies("");
   const [currentState, setCurrentState] = useState("notSignedIn");
   
+  //set artist list and progress bar    
   let [artists, setArtists] = useState([]);
-  let [artists2, setArtists2] = 
-  [
-    {
-        "id": 1,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb785f913ef1b4dd22cd8b4e0c"
-    },
-    {
-        "id": 2,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb83ea49177cdd404c1107b56c"
-    },
-    {
-        "id": 3,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb65136609a4980a953d64f552"
-    },
-    {
-        "id": 4,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb5328c468cef8019bc41b63a8"
-    },
-    {
-        "id": 5,
-        "url": "https://i.scdn.co/image/ab6761610000e5ebf150017ca69c8793503c2d4f"
-    },
-    {
-        "id": 6,
-        "url": "https://i.scdn.co/image/ab6761610000e5ebe84e08fb1dfa2bf9b5a61563"
-    },
-    {
-        "id": 7,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb9251935c563eaaa0bb399ad6"
-    },
-    {
-        "id": 8,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb78484e23002e1607039af9b9"
-    },
-    {
-        "id": 9,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb021c23c69e01f3e917264393"
-    },
-    {
-        "id": 10,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb41e4a3b8c1d45a9e49b6de21"
-    },
-    {
-        "id": 11,
-        "url": "https://i.scdn.co/image/ab6761610000e5eb5fb007a707c0ec3a7c1726af"
-    }
-];
   const [completionProgress, setCompletionProgress] = useState(0);
   
   
-  
+  //set variables for carousel
   const [emblaRef] = useEmblaCarousel({ loop: true }, [Autoplay()]);
   
+  //use effect for checking for token and if signed in
     useEffect(() => {
         const hash = window.location.hash
         let token = window.localStorage.getItem("token")
@@ -108,11 +55,14 @@ export default function SpotifyInput() {
     
     }, []) 
     
+    //function for logout
     const logout = () => {
       setCookie("token","",{ path: "/" });
       setCurrentState("notSignedIn");
       window.localStorage.removeItem("token");
     }
+
+    //function for validation
   const handleValidation = () => {
     if(userInput.length <= 0 || parseInt(userInput)<2004 || parseInt(userInput)>2022 ){
       setIsFormValid(false);
@@ -123,6 +73,7 @@ export default function SpotifyInput() {
     }
   };
 
+  //function for creating playlist
 const createPlaylist = async (e) => {
   e.preventDefault();
   let isValidForm = handleValidation();
