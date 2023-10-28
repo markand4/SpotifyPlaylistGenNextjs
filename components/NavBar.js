@@ -19,20 +19,20 @@ export default function Navbar() {
       <div className="flex  md:flex-row justify-between items-center">
         <div className="flex flex-col">
           <Link href="https://personal-portfolio-markkurpiel.vercel.app/">
-            <p className="text-base font-light text-gray-500 hover:text-Emerald-600">
-              Back to Portfolio
+            <p className="text-base font-light text-white hover:text-Emerald-600">
+            &#8592; Back to Portfolio
             </p>
           </Link>
         </div>
 
 
         <div className="space-x-4 flex flex-row items-center">
-          <a href={myData.socialLinks.github} x>
+          <a href={myData.socialLinks.github}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="16"
-              fill="gray"
+              fill="white"
               className="bi bi-linkedin h-5 w-5"
               viewBox="0 0 24 24"
             >
@@ -48,7 +48,7 @@ export default function Navbar() {
               href={myData.socialLinks.linkedin}
               width="16"
               height="16"
-              fill="gray"
+              fill="white"
               className="bi bi-linkedin h-5 w-5"
               viewBox="0 0 16 16"
             >
