@@ -124,9 +124,6 @@ const createPlaylist = async (e) => {
     var tempArt = []
 
     for (let i = 0; i < artList.length; i++) {
-      const search = debounce((query) => {
-        // fetch data from API with the query
-      }, 1000); // delay function call for 500ms
 
       //add 1% to progress bar
       setCompletionProgress(i);
