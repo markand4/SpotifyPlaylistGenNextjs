@@ -77,6 +77,24 @@ export default function SpotifyInput() {
 const createPlaylist = async (e) => {
   e.preventDefault();
   let isValidForm = handleValidation();
+  /* if(isValidForm==true){
+    const createPlaylistAPI = async () => {
+      try {
+        const response = await axios.post('/api/createPlaylist', {
+          token: cookie.token,
+          userInput: userInput
+        });
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    setCurrentState("creatingPlayist")
+    // Call the createPlaylistAPI function
+    await createPlaylistAPI();
+    setCurrentState("playlistCreated");
+    
+  } */
   if(isValidForm==true){
     setCurrentState("creatingPlayist")
     
@@ -106,6 +124,10 @@ const createPlaylist = async (e) => {
     var tempArt = []
 
     for (let i = 0; i < artList.length; i++) {
+      const search = debounce((query) => {
+        // fetch data from API with the query
+      }, 1000); // delay function call for 500ms
+
       //add 1% to progress bar
       setCompletionProgress(i);
 
